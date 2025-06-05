@@ -97,19 +97,36 @@ export default function TransferForm() {
   }
 
   // Função para lidar com o envio do formulário
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Aqui você pode implementar a lógica para enviar os dados do formulário
-    console.log({
-      pixKeyType,
-      pixKey,
-      amount,
-      date: date ? format(date, "dd/MM/yyyy") : "",
-    })
+    const numericAmount = Number(amount.replace(/\D/g, "")) / 100
 
-    alert("Transferência agendada com sucesso!")
+    try {
+      const response = await fetch("http://localhost:3000/transactions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          value: numericAmount,
+          pixKey,
+          pixKeyType,
+          date: date ? format(date, "yyyy-MM-dd HH:mm:ss") : ""
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Erro na transferência")
+      }
+
+      alert("Transferência agendada com sucesso!")
+    } catch (error) {
+      console.error("Erro ao enviar dados:", error)
+      alert("Falha ao agendar transferência.")
+    }
   }
+
 
   return (
     <div className="w-full max-w-md bg-black border border-[#D4AF37] rounded-lg shadow-lg p-6">
@@ -123,7 +140,7 @@ export default function TransferForm() {
           <Label htmlFor="pixKeyType" className="text-[#D4AF37]">
             Tipo de Chave PIX
           </Label>
-          <Select onValueChange={(value) => setPixKeyType(value)} value={pixKeyType}>
+          <Select onValueChange={(value) => setPixKeyType(value)} value={pixKeyType} required>
             <SelectTrigger className="bg-black text-white border-[#D4AF37] focus:ring-[#D4AF37]">
               <SelectValue placeholder="Selecione o tipo de chave" />
             </SelectTrigger>
@@ -154,6 +171,7 @@ export default function TransferForm() {
             value={pixKey}
             onChange={handlePixKeyChange}
             disabled={!isPixKeyEnabled}
+            required
             placeholder={
               pixKeyType === "cpf"
                 ? "000.000.000-00"
@@ -177,6 +195,7 @@ export default function TransferForm() {
             id="amount"
             type="text"
             value={amount}
+            required
             onChange={handleAmountChange}
             placeholder="R$ 0,00"
             className="bg-black text-white border-[#D4AF37] focus:ring-[#D4AF37] placeholder-gray-500"
