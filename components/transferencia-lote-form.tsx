@@ -28,43 +28,27 @@ export default function TransferenciaLoteForm() {
     const file = e.target.files?.[0]
     if (file) {
       setArquivo(file)
-      processarArquivo(file)
     }
-  }
-
-  const processarArquivo = async (file: File) => {
-    // Aqui você processaria o arquivo Excel
-    // Por simplicidade, vou simular o processamento
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      // Simular dados do Excel
-      const dadosSimulados: TransferenciaLote[] = [
-        { chavePix: "123.456.789-00", valor: 100.5, linha: 1 },
-        { chavePix: "(11) 99999-9999", valor: 250.0, linha: 2 },
-        { chavePix: "12.345.678/0001-90", valor: 500.75, linha: 3 },
-      ]
-      setTransferencias(dadosSimulados)
-    }
-    reader.readAsText(file)
   }
 
   const enviarTransferencias = async () => {
+    if (!arquivo) return
+
     setIsProcessing(true)
     setResultado(null)
 
+    const formData = new FormData()
+    formData.append("file", arquivo)
+
     try {
-      const response = await fetch("/api/transferencia-lote", {
+      const response = await fetch("http://localhost:3005/transactions/batch", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          // Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
-        body: JSON.stringify({
-          transferencias: transferencias.map((t) => ({
-            chavePix: t.chavePix,
-            valor: t.valor,
-          })),
-        }),
+
+        body: formData,
       })
 
       const data = await response.json()
@@ -82,13 +66,14 @@ export default function TransferenciaLoteForm() {
       console.error("Erro:", error)
       setResultado({
         sucesso: 0,
-        erro: transferencias.length,
+        erro: 1,
         detalhes: ["Erro ao conectar com o servidor"],
       })
     } finally {
       setIsProcessing(false)
     }
   }
+
 
   const formatarValor = (valor: number) => {
     return valor.toLocaleString("pt-BR", {
