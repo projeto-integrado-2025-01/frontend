@@ -33,7 +33,7 @@ export default function ExtratoView() {
       const response = await fetch("http://localhost:3005/statement", {
         headers: {
           "Content-Type": "application/json",
-          // Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       })
 

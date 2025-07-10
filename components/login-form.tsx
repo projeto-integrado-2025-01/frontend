@@ -32,7 +32,6 @@ export default function LoginForm() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          // Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
         body: JSON.stringify({
           cpf: cpf.replace(/\D/g, ""),
@@ -41,6 +40,8 @@ export default function LoginForm() {
       })
 
       if (response.ok) {
+        const data = await response.json()
+        localStorage.setItem("token", data.token)
         router.push("/extrato")
       } else {
         alert("Credenciais inválidas")
