@@ -3,6 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
@@ -99,152 +100,152 @@ export default function TransferForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    const numericAmount = Number(amount.replace(/\D/g, "")) / 100
+
     try {
-      const response = await fetch("/api/transferencia", {
+      const response = await fetch("http://localhost:3000/transactions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          // Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
         body: JSON.stringify({
-          tipoChave: pixKeyType,
-          chavePix: pixKey,
-          valor: Number.parseFloat(amount.replace(/[^\d,]/g, "").replace(",", ".")),
-          data: date ? format(date, "yyyy-MM-dd") : "",
+          value: numericAmount,
+          pixKey,
+          pixKeyType,
+          scheduleDate: date ? format(date, "yyyy-MM-dd HH:mm:ss") : ""
         }),
       })
 
-      if (response.ok) {
-        alert("Transferência agendada com sucesso!")
-        // Limpar formulário
-        setPixKeyType("")
-        setPixKey("")
-        setAmount("")
-        setDate(new Date())
-      } else {
-        const error = await response.json()
-        alert(`Erro: ${error.message}`)
+      if (!response.ok) {
+        throw new Error("Erro na transferência")
       }
+
+      alert("Transferência agendada com sucesso!")
     } catch (error) {
-      console.error("Erro:", error)
-      alert("Erro ao processar transferência")
+      console.error("Erro ao enviar dados:", error)
+      alert("Falha ao agendar transferência.")
     }
   }
 
+
   return (
-    <div className="w-full max-w-md bg-black border border-[#D4AF37] rounded-lg shadow-lg p-6">
-      <div className="mb-6 text-center">
-        <h1 className="text-2xl font-bold text-[#D4AF37]">Transferência PIX</h1>
+      <div className="w-full max-w-md bg-black border border-[#D4AF37] rounded-lg shadow-lg p-6">
+        <div className="flex items-center mb-6">
+          <Image src="/images/logo_banco.png" alt="EasyPay Logo" width={120} height={60} className="mr-4" />
+          <h1 className="text-2xl font-bold text-[#D4AF37]">Transferência PIX</h1>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="pixKeyType" className="text-[#D4AF37]">
+              Tipo de Chave PIX
+            </Label>
+            <Select onValueChange={(value) => setPixKeyType(value)} value={pixKeyType} required>
+              <SelectTrigger className="bg-black text-white border-[#D4AF37] focus:ring-[#D4AF37]">
+                <SelectValue placeholder="Selecione o tipo de chave" />
+              </SelectTrigger>
+              <SelectContent className="bg-black text-white border-[#D4AF37]">
+                <SelectItem value="CPF" className="hover:bg-gray-800">
+                  CPF
+                </SelectItem>
+                <SelectItem value="cnpj" className="hover:bg-gray-800">
+                  CNPJ
+                </SelectItem>
+                <SelectItem value="celular" className="hover:bg-gray-800">
+                  Celular
+                </SelectItem>
+                <SelectItem value="aleatoria" className="hover:bg-gray-800">
+                  Aleatória
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="pixKey" className="text-[#D4AF37]">
+              Chave PIX
+            </Label>
+            <Input
+                id="pixKey"
+                type="text"
+                value={pixKey}
+                onChange={handlePixKeyChange}
+                disabled={!isPixKeyEnabled}
+                required
+                placeholder={
+                  pixKeyType === "cpf"
+                      ? "000.000.000-00"
+                      : pixKeyType === "cnpj"
+                          ? "00.000.000/0000-00"
+                          : pixKeyType === "celular"
+                              ? "(00) 00000-0000"
+                              : pixKeyType === "aleatoria"
+                                  ? "Digite a chave aleatória"
+                                  : ""
+                }
+                className="bg-black text-white border-[#D4AF37] focus:ring-[#D4AF37] placeholder-gray-500"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="amount" className="text-[#D4AF37]">
+              Valor
+            </Label>
+            <Input
+                id="amount"
+                type="text"
+                value={amount}
+                required
+                onChange={handleAmountChange}
+                placeholder="R$ 0,00"
+                className="bg-black text-white border-[#D4AF37] focus:ring-[#D4AF37] placeholder-gray-500"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="date" className="text-[#D4AF37]">
+              Data da Transferência
+            </Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal bg-black text-white border-[#D4AF37] hover:bg-gray-900 hover:text-[#D4AF37]"
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4 text-[#D4AF37]" />
+                  {date ? format(date, "dd/MM/yyyy", { locale: ptBR }) : <span>Selecione uma data</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 bg-black border-[#D4AF37]">
+                <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={setDate}
+                    initialFocus
+                    locale={ptBR}
+                    className="bg-black text-white"
+                    classNames={{
+                      day_selected:
+                          "bg-[#D4AF37] text-black hover:bg-[#D4AF37] hover:text-black focus:bg-[#D4AF37] focus:text-black",
+                      day_today: "bg-gray-800 text-[#D4AF37]",
+                      day: "hover:bg-gray-800",
+                      head_cell: "text-[#D4AF37]",
+                      cell: "text-white",
+                      nav_button: "text-[#D4AF37] hover:bg-gray-800",
+                      nav_button_previous: "text-[#D4AF37]",
+                      nav_button_next: "text-[#D4AF37]",
+                      caption: "text-[#D4AF37]",
+                    }}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          <Button type="submit" className="w-full bg-[#D4AF37] text-black hover:bg-[#B8860B] hover:text-black">
+            Transferir
+          </Button>
+        </form>
       </div>
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="pixKeyType" className="text-[#D4AF37]">
-            Tipo de Chave PIX
-          </Label>
-          <Select onValueChange={(value) => setPixKeyType(value)} value={pixKeyType}>
-            <SelectTrigger className="bg-black text-white border-[#D4AF37] focus:ring-[#D4AF37]">
-              <SelectValue placeholder="Selecione o tipo de chave" />
-            </SelectTrigger>
-            <SelectContent className="bg-black text-white border-[#D4AF37]">
-              <SelectItem value="cpf" className="hover:bg-gray-800">
-                CPF
-              </SelectItem>
-              <SelectItem value="cnpj" className="hover:bg-gray-800">
-                CNPJ
-              </SelectItem>
-              <SelectItem value="celular" className="hover:bg-gray-800">
-                Celular
-              </SelectItem>
-              <SelectItem value="aleatoria" className="hover:bg-gray-800">
-                Aleatória
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="pixKey" className="text-[#D4AF37]">
-            Chave PIX
-          </Label>
-          <Input
-            id="pixKey"
-            type="text"
-            value={pixKey}
-            onChange={handlePixKeyChange}
-            disabled={!isPixKeyEnabled}
-            placeholder={
-              pixKeyType === "cpf"
-                ? "000.000.000-00"
-                : pixKeyType === "cnpj"
-                  ? "00.000.000/0000-00"
-                  : pixKeyType === "celular"
-                    ? "(00) 00000-0000"
-                    : pixKeyType === "aleatoria"
-                      ? "Digite a chave aleatória"
-                      : ""
-            }
-            className="bg-black text-white border-[#D4AF37] focus:ring-[#D4AF37] placeholder-gray-500"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="amount" className="text-[#D4AF37]">
-            Valor
-          </Label>
-          <Input
-            id="amount"
-            type="text"
-            value={amount}
-            onChange={handleAmountChange}
-            placeholder="R$ 0,00"
-            className="bg-black text-white border-[#D4AF37] focus:ring-[#D4AF37] placeholder-gray-500"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="date" className="text-[#D4AF37]">
-            Data da Transferência
-          </Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className="w-full justify-start text-left font-normal bg-black text-white border-[#D4AF37] hover:bg-gray-900 hover:text-[#D4AF37] data-[state=open]:bg-white data-[state=open]:text-black data-[state=open]:border-gray-300"
-              >
-                <CalendarIcon className="mr-2 h-4 w-4 text-[#D4AF37] data-[state=open]:text-gray-600" />
-                {date ? format(date, "dd/MM/yyyy", { locale: ptBR }) : <span>Selecione uma data</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 bg-white border-gray-300">
-              <Calendar
-                mode="single"
-                selected={date}
-                onSelect={setDate}
-                initialFocus
-                locale={ptBR}
-                className="bg-white text-black"
-                classNames={{
-                  day_selected:
-                    "bg-blue-600 text-white hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white",
-                  day_today: "bg-gray-100 text-blue-600",
-                  day: "hover:bg-gray-100",
-                  head_cell: "text-gray-600",
-                  cell: "text-black",
-                  nav_button: "text-gray-600 hover:bg-gray-100",
-                  nav_button_previous: "text-gray-600",
-                  nav_button_next: "text-gray-600",
-                  caption: "text-gray-900",
-                }}
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
-
-        <Button type="submit" className="w-full bg-[#D4AF37] text-black hover:bg-[#B8860B] hover:text-black">
-          Transferir
-        </Button>
-      </form>
-    </div>
   )
 }
