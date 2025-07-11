@@ -83,101 +83,112 @@ export default function TransferenciaLoteForm() {
   }
 
   return (
-    <div className="w-full max-w-4xl bg-black border border-[#D4AF37] rounded-lg shadow-lg p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[#D4AF37] mb-2">Transferência PIX em Lote</h1>
-        <p className="text-gray-400 text-sm">Faça upload de um arquivo Excel com as colunas: Chave PIX, Valor</p>
-      </div>
-
-      <div className="space-y-6">
-        {/* Upload de Arquivo */}
-        <div className="space-y-2">
-          <Label className="text-[#D4AF37]">Arquivo Excel</Label>
-          <div className="flex items-center gap-4">
-            <Input
-              type="file"
-              accept=".xlsx,.xls,.csv"
-              onChange={handleFileChange}
-              className="bg-black text-white border-[#D4AF37] focus:ring-[#D4AF37] file:bg-[#D4AF37] file:text-black file:border-0 file:rounded file:px-3 file:py-1"
-            />
-            {arquivo && (
-              <div className="flex items-center text-green-400">
-                <FileSpreadsheet className="mr-2 h-4 w-4" />
-                <span className="text-sm">{arquivo.name}</span>
-              </div>
-            )}
-          </div>
+      <div className="w-full max-w-4xl bg-black border border-[#D4AF37] rounded-lg shadow-lg p-6">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-[#D4AF37] mb-2">Transferência PIX em Lote</h1>
+          <p className="text-gray-400 text-sm">Faça upload de um arquivo Excel com as colunas: Chave PIX, Valor</p>
         </div>
 
-        {/* Preview das Transferências */}
-        {transferencias.length > 0 && (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-[#D4AF37]">Preview - {transferencias.length} transferências</h3>
-            <div className="max-h-64 overflow-y-auto space-y-2">
-              {transferencias.map((transferencia, index) => (
-                <div key={index} className="flex justify-between items-center p-3 border border-gray-700 rounded">
-                  <div>
-                    <div className="text-white font-medium">{transferencia.chavePix}</div>
-                    <div className="text-gray-400 text-sm">Linha {transferencia.linha}</div>
+        <div className="space-y-6">
+          {/* Upload de Arquivo */}
+          <div className="space-y-2">
+            <Label className="text-[#D4AF37]">Arquivo Excel</Label>
+            <div className="flex items-center gap-4">
+              <Input
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  onChange={handleFileChange}
+                  className="bg-black text-white border-[#D4AF37] focus:ring-[#D4AF37] file:bg-[#D4AF37] file:text-black file:border-0 file:rounded file:px-3 file:py-1"
+              />
+              {arquivo && (
+                  <div className="flex items-center text-green-400">
+                    <FileSpreadsheet className="mr-2 h-4 w-4" />
+                    <span className="text-sm">{arquivo.name}</span>
                   </div>
-                  <div className="text-[#D4AF37] font-bold">{formatarValor(transferencia.valor)}</div>
-                </div>
-              ))}
+              )}
             </div>
-
-            <div className="flex justify-between items-center p-4 bg-gray-900 rounded">
-              <span className="text-white font-semibold">Total:</span>
-              <span className="text-[#D4AF37] font-bold text-lg">
-                {formatarValor(transferencias.reduce((sum, t) => sum + t.valor, 0))}
-              </span>
-            </div>
-
-            <Button
-              onClick={enviarTransferencias}
-              disabled={isProcessing}
-              className="w-full bg-[#D4AF37] text-black hover:bg-[#B8860B] disabled:opacity-50"
-            >
-              <Upload className="mr-2 h-4 w-4" />
-              {isProcessing ? "Processando..." : "Enviar Transferências"}
-            </Button>
-          </div>
-        )}
-
-        {/* Resultado */}
-        {resultado && (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-[#D4AF37]">Resultado do Processamento</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center p-4 bg-green-900 rounded">
-                <CheckCircle className="mr-2 h-5 w-5 text-green-400" />
-                <div>
-                  <div className="text-green-400 font-semibold">Sucessos</div>
-                  <div className="text-white text-2xl font-bold">{resultado.sucesso}</div>
-                </div>
-              </div>
-              <div className="flex items-center p-4 bg-red-900 rounded">
-                <AlertCircle className="mr-2 h-5 w-5 text-red-400" />
-                <div>
-                  <div className="text-red-400 font-semibold">Erros</div>
-                  <div className="text-white text-2xl font-bold">{resultado.erro}</div>
-                </div>
-              </div>
-            </div>
-            {resultado.detalhes.length > 0 && (
-              <div className="space-y-2">
-                <h4 className="text-[#D4AF37] font-semibold">Detalhes:</h4>
-                <div className="max-h-32 overflow-y-auto space-y-1">
-                  {resultado.detalhes.map((detalhe, index) => (
-                    <div key={index} className="text-gray-400 text-sm p-2 bg-gray-900 rounded">
-                      {detalhe}
-                    </div>
-                  ))}
-                </div>
-              </div>
+            {/* Botão de Enviar Formulário */}
+            {arquivo && (
+                <Button
+                    onClick={enviarTransferencias}
+                    disabled={isProcessing}
+                    className="mt-4 bg-[#D4AF37] text-black hover:bg-[#B8860B] disabled:opacity-50"
+                >
+                  <Upload className="mr-2 h-4 w-4" />
+                  {isProcessing ? "Processando..." : "Enviar Arquivo"}
+                </Button>
             )}
           </div>
-        )}
+
+          {/* Preview das Transferências */}
+          {transferencias.length > 0 && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-[#D4AF37]">Preview - {transferencias.length} transferências</h3>
+                <div className="max-h-64 overflow-y-auto space-y-2">
+                  {transferencias.map((transferencia, index) => (
+                      <div key={index} className="flex justify-between items-center p-3 border border-gray-700 rounded">
+                        <div>
+                          <div className="text-white font-medium">{transferencia.chavePix}</div>
+                          <div className="text-gray-400 text-sm">Linha {transferencia.linha}</div>
+                        </div>
+                        <div className="text-[#D4AF37] font-bold">{formatarValor(transferencia.valor)}</div>
+                      </div>
+                  ))}
+                </div>
+
+                <div className="flex justify-between items-center p-4 bg-gray-900 rounded">
+                  <span className="text-white font-semibold">Total:</span>
+                  <span className="text-[#D4AF37] font-bold text-lg">
+                {formatarValor(transferencias.reduce((sum, t) => sum + t.valor, 0))}
+              </span>
+                </div>
+
+                <Button
+                    onClick={enviarTransferencias}
+                    disabled={isProcessing}
+                    className="w-full bg-[#D4AF37] text-black hover:bg-[#B8860B] disabled:opacity-50"
+                >
+                  <Upload className="mr-2 h-4 w-4" />
+                  {isProcessing ? "Processando..." : "Enviar Transferências"}
+                </Button>
+              </div>
+          )}
+
+          {/* Resultado */}
+          {resultado && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-[#D4AF37]">Resultado do Processamento</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex items-center p-4 bg-green-900 rounded">
+                    <CheckCircle className="mr-2 h-5 w-5 text-green-400" />
+                    <div>
+                      <div className="text-green-400 font-semibold">Sucessos</div>
+                      <div className="text-white text-2xl font-bold">{resultado.sucesso}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center p-4 bg-red-900 rounded">
+                    <AlertCircle className="mr-2 h-5 w-5 text-red-400" />
+                    <div>
+                      <div className="text-red-400 font-semibold">Erros</div>
+                      <div className="text-white text-2xl font-bold">{resultado.erro}</div>
+                    </div>
+                  </div>
+                </div>
+                {resultado.detalhes.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="text-[#D4AF37] font-semibold">Detalhes:</h4>
+                      <div className="max-h-32 overflow-y-auto space-y-1">
+                        {resultado.detalhes.map((detalhe, index) => (
+                            <div key={index} className="text-gray-400 text-sm p-2 bg-gray-900 rounded">
+                              {detalhe}
+                            </div>
+                        ))}
+                      </div>
+                    </div>
+                )}
+              </div>
+          )}
+        </div>
       </div>
-    </div>
   )
 }
